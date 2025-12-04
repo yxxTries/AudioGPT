@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 
 from asr.model import ASRModel
+import re
 
 
 def main():
@@ -21,6 +22,14 @@ def main():
 
     # Transcribe
     result = asr.transcribe_file(audio_path)
+    # Clean and optimize the transcription text for LLM input
+    text = result["text"].strip()
+    # Remove excessive whitespace and normalize spacing
+    text = " ".join(text.split())
+    # Remove any potential artifacts or repeated punctuation
+    text = re.sub(r'([.!?])\1+', r'\1', text)
+    text = re.sub(r'\s+([.,!?;:])', r'\1', text)
+    result["text"] = text
 
     # Print the results
     print("\n========== TRANSCRIPTION RESULT ==========")

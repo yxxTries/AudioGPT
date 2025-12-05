@@ -48,32 +48,9 @@ pip install -r requirements.txt
 
 ## Running
 
-### Start the API Server
+### Setup Instructions: API Server + UI
 
-```bash
-uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload
-```
-
-API will be available at `http://localhost:8000`
-
-### Start the UI
-
-```bash
-cd ui
-python -m http.server 8080
-```
-
-Then open `http://localhost:8080` in your browser.
-
-### CLI Voice Conversation
-
-```bash
-python tests/test_voice_conversation_cli.py
-```
-
-Press ENTER to start recording, ENTER again to stop.
-
-### API Documentation
+launch start.bat to initialize the API server, then use webserver to open ui.
 
 Once running, access the interactive docs at:
 - Swagger UI: `http://localhost:8000/docs`
@@ -83,3 +60,5 @@ Once running, access the interactive docs at:
 
 - `POST /api/llm` - Send text to LLM
 - `POST /api/asr-llm` - Upload audio for transcription + LLM response
+
+-Built by Amil

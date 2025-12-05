@@ -1,4 +1,4 @@
-# AudioGPT (Quick README)
+# AudioGPT
 
 This repo contains a simple audio→text pipeline using Whisper for ASR and a local Hugging Face model for follow‑up text processing.
 
@@ -47,11 +47,6 @@ pip install faster-whisper transformers torch sounddevice keyboard scipy numpy h
 After installing dependencies, download the LLM model:
 ```bash
 python -c "from huggingface_hub import snapshot_download; print(snapshot_download('Qwen/Qwen2-0.5B-Instruct', cache_dir='models'))"
-```
-
-Run the ASR demo (requires admin for keyboard):
-```bash
-python src/app/asr_demo.py
 ```
 
 Run tests:

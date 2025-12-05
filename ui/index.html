@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Local LLM UI</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="app-header">
+      <h1>Local LLM</h1>
+      <p class="subtitle">Text or voice → ASR → LLM (local)</p>
+    </header>
+
+    <main class="chat-container" id="chat-container">
+      <!-- Chat history will be appended here -->
+    </main>
+
+    <section class="input-section">
+      <form id="text-form" class="text-form">
+        <textarea
+          id="text-input"
+          class="text-input"
+          rows="2"
+          placeholder="Type your message..."
+        ></textarea>
+        <button type="submit" class="btn btn-primary">Send</button>
+      </form>
+
+      <div class="audio-controls">
+        <button id="record-btn" class="btn btn-secondary">
+          🎙 Start Recording
+        </button>
+        <span id="record-status" class="record-status">Idle</span>
+      </div>
+
+      <div id="error-box" class="error-box" aria-live="polite"></div>
+    </section>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

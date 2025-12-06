@@ -26,6 +26,8 @@ async def run_llm(payload: TextRequest, llm: Annotated[LLMService, Depends(get_l
         req = LLMRequest(text=payload.message,
                          max_new_tokens=payload.max_new_tokens,
                          temperature=payload.temperature)
+        # Log when we dispatch to LLM to make request flow visible in console
+        logger.info("Sending LLM generate request \n(string:%s)", payload.message)        
         rep = llm.generate(req)
         return LLMReply(text=rep.text, timestamp=utcnow())
     except Exception as e:

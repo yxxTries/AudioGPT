@@ -109,7 +109,7 @@ async function handleTextSubmit(event) {
   if (!message) return;
 
   appendMessage("user", message, new Date());
-  let placeholder = appendMessage("assistant", "[Thinking…]", new Date());
+  let placeholder = appendMessage("assistant", "Thinking…", new Date());
   textInput.value = "";
   textInput.disabled = true;
 

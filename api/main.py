@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import settings
 from .routes import router
+from .deps import get_asr_service, get_llm_service
 
 LOG_CONFIG = {
   "version": 1,
@@ -23,6 +24,13 @@ def create_app() -> FastAPI:
                        allow_credentials=settings.cors_allow_credentials,
                        allow_methods=settings.cors_allow_methods,
                        allow_headers=settings.cors_allow_headers)
+
+    @app.on_event("startup")
+    async def preload_models() -> None:
+        # Preload ASR and LLM so the first request is fast; services are cached in deps
+        get_asr_service()
+        get_llm_service()
+
     app.include_router(router)
     return app
 

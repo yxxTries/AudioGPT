@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from .config import LLMConfig, DEFAULT_LLM_CONFIG
+from .config import LLMConfig, DEFAULT_LLM_CONFIG, PROMPT_TEMPLATES, DEFAULT_PROMPT_KEY
 from .model_loader import QwenModelLoader
 from .types import LLMRequest, LLMResponse
 
@@ -49,15 +49,35 @@ class LLMService:
         Returns:
             LLMResponse with the generated text.
         """
-        prompt = request.text
-        if not prompt:
+        base_text = request.text
+        if not base_text:
             raise ValueError("LLMRequest.text must not be empty")
+
+        prompt_key = request.prompt_key or DEFAULT_PROMPT_KEY
+        template = PROMPT_TEMPLATES.get(prompt_key, PROMPT_TEMPLATES[DEFAULT_PROMPT_KEY])
+        prompt = template.format(
+            instruction="",
+            input=base_text,
+            system="You are a helpful assistant.",
+            user=base_text,
+        )
 
         max_new_tokens = request.max_new_tokens or self._config.max_new_tokens
         temperature = request.temperature if request.temperature is not None else self._config.temperature
+        top_p = request.top_p if request.top_p is not None else self._config.top_p
+        repetition_penalty = (
+            request.repetition_penalty
+            if request.repetition_penalty is not None
+            else self._config.repetition_penalty
+        )
 
         logger.debug(
-            "Generating response (max_new_tokens=%s, temperature=%s)", max_new_tokens, temperature
+            "Generating response (prompt_key=%s, max_new_tokens=%s, temperature=%s, top_p=%s, repetition_penalty=%s)",
+            prompt_key,
+            max_new_tokens,
+            temperature,
+            top_p,
+            repetition_penalty,
         )
 
         # Tokenize input
@@ -68,6 +88,8 @@ class LLMService:
             **inputs,
             max_new_tokens=max_new_tokens,
             temperature=temperature,
+            top_p=top_p,
+            repetition_penalty=repetition_penalty,
             do_sample=temperature > 0,
             pad_token_id=getattr(self._tokenizer, "eos_token_id", None),
         )

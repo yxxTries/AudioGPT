@@ -13,12 +13,27 @@ class LLMConfig:
         device: Device identifier understood by the underlying ML framework (e.g. "cpu", "cuda").
         max_new_tokens: Default maximum number of tokens to generate for a response.
         temperature: Default sampling temperature for generation.
+        top_p: Nucleus sampling probability mass to consider.
+        repetition_penalty: Penalty applied to repeated tokens; 1.0 disables it.
     """
 
     model_dir: Path = Path("models") / "models--Qwen--Qwen2-0.5B-Instruct" / "snapshots" / "c540970f9e29518b1d8f06ab8b24cba66ad77b6d"
     device: str = "cpu"
     max_new_tokens: int = 128
-    temperature: float = 0.7
+    temperature: float = 0.3
+    top_p: float = 0.9
+    repetition_penalty: float = 1.0
 
 
 DEFAULT_LLM_CONFIG = LLMConfig()
+
+# Simple prompt templates that can be swapped/edited later.
+PROMPT_TEMPLATES = {
+    "default": "You are a concise, smart assistant. Provide a clear, helpful answer.\n\nInput:\n{input}\n\nAnswer:",
+    "chat": "<|im_start|>system\nYou are a concise, smart assistant. Provide clear, helpful answers and nothing else.\n<|im_end|>\n<|im_start|>user\n{user}\n<|im_end|>\n<|im_start|>assistant\n",
+    "summarize": "You are a concise assistant. Summarize the following text in 3 bullet points:\n\n{input}\n",
+    "translate": "You are a concise assistant. Translate to French:\n\n{input}\n",
+}
+
+# Default prompt key to use when none is specified elsewhere.
+DEFAULT_PROMPT_KEY = "default"

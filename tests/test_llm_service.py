@@ -78,13 +78,13 @@ def test_generate_uses_overrides_for_parameters() -> None:
 def test_llm_runtime_with_real_model() -> None:
     """Runtime test that loads the actual model and generates a response.
     
-    This test uses the real Qwen model to verify end-to-end functionality.
+    This test uses the real TinyLlama model to verify end-to-end functionality.
     It outputs the results for manual inspection.
     """
     from pathlib import Path
     
     # Use the actual model path from the workspace
-    model_path = PROJECT_ROOT / "models" / "models--Qwen--Qwen2-0.5B-Instruct" / "snapshots" / "c540970f9e29518b1d8f06ab8b24cba66ad77b6d"
+    model_path = PROJECT_ROOT / "models" / "TinyLlama-1.1B-Chat-v1.0"
     
     config = LLMConfig(
         model_dir=model_path,

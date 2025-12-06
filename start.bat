@@ -4,14 +4,14 @@ echo.
 
 :: Start API server in a new window
 echo Starting API Server on port 8000...
-start "AudioGPT API Server" cmd /k "cd /d %~dp0 && .venv\Scripts\activate && uvicorn api.main:app --host 0.0.0.0 --port 8000"
+start "AudioGPT API Server" cmd /k "cd /d %~dp0 && .venv\Scripts\python.exe -m uvicorn api.main:app --host 0.0.0.0 --port 8000"
 
 :: Wait a moment for API to initialize
 timeout /t 2 /nobreak >nul
 
 :: Start UI server in a new window
 echo Starting UI Server on port 8080...
-start "AudioGPT UI Server" cmd /k "cd /d %~dp0\ui && python -m http.server 8080"
+start "AudioGPT UI Server" cmd /k "cd /d %~dp0\ui && ..\\.venv\Scripts\python.exe -m http.server 8080"
 
 :: Wait a moment then open browser
 timeout /t 2 /nobreak >nul

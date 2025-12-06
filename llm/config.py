@@ -6,10 +6,10 @@ from pathlib import Path
 
 @dataclass(frozen=True)
 class LLMConfig:
-    """Configuration for the local Qwen LLM.
+    """Configuration for the local TinyLlama LLM.
 
     Attributes:
-        model_dir: Path to the directory containing the Qwen model weights and tokenizer.
+        model_dir: Path to the directory containing the TinyLlama model weights and tokenizer.
         device: Device identifier understood by the underlying ML framework (e.g. "cpu", "cuda").
         max_new_tokens: Default maximum number of tokens to generate for a response.
         temperature: Default sampling temperature for generation.
@@ -17,16 +17,17 @@ class LLMConfig:
         repetition_penalty: Penalty applied to repeated tokens; 1.0 disables it.
     """
 
-    model_dir: Path = Path("models") / "models--Qwen--Qwen2-0.5B-Instruct" / "snapshots" / "c540970f9e29518b1d8f06ab8b24cba66ad77b6d"
+    model_dir: Path = Path("models") / "TinyLlama-1.1B-Chat-v1.0"
     device: str = "auto"  # "auto" picks CUDA if available, else CPU
-    max_new_tokens: int = 256
-    temperature: float = 0.25
-    top_p: float = 0.9
-    repetition_penalty: float = 1.0
-    system_prompt: str = "You are a helpful assistant."
-    instruction_prompt: str = ""
+    max_new_tokens: int = 50  # reduced for faster CPU inference
+    temperature: float = 0.8  # slightly creative but coherent
+    top_p: float = 0.92  # good balance for TinyLlama
+    top_k: int = 40  # limits vocabulary for more focused responses
+    repetition_penalty: float = 1.15  # TinyLlama needs stronger penalty to avoid loops
+    system_prompt: str = "You are a concise AI. Give short, direct answers. Never repeat the user's question. Never say 'As an AI' or similar phrases."
+    instruction_prompt: str = "Only 1-2 sentence answers are allowed. Be brief and to the point."
     load_in_8bit: bool = False
-    load_in_4bit: bool = True
+    load_in_4bit: bool = True  # enabled for GPU users, ignored on CPU
     cpu_dtype: str = "float32"  # used when running on CPU to avoid slow float16 emulation
     cuda_dtype: str = "float16"  # used when running on CUDA
 
@@ -34,11 +35,9 @@ class LLMConfig:
 DEFAULT_LLM_CONFIG = LLMConfig()
 
 # Simple prompt templates that can be swapped/edited later.
+# TinyLlama uses the Zephyr/Llama chat format
 PROMPT_TEMPLATES = {
-    "default": "You are a concise, smart assistant. Provide a clear, helpful answer.\n\nInput:\n{input}\n\nAnswer:",
-    "chat": "<|im_start|>system\nYou are a concise, smart assistant. Provide clear, helpful answers and nothing else.\n<|im_end|>\n<|im_start|>user\n{user}\n<|im_end|>\n<|im_start|>assistant\n",
-    "summarize": "You are a concise assistant. Summarize the following text in 3 bullet points:\n\n{input}\n",
-    "translate": "You are a concise assistant. Translate to French:\n\n{input}\n",
+    "default": "<|system|>\nYou are an assistant that will help with tasks by answer questions. Only provide 1-2 sentence answers.</s>\n<|user|>\n{input}</s>\n<|assistant|>\n"
 }
 
 # Default prompt key to use when none is specified elsewhere.

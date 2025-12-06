@@ -8,8 +8,8 @@ from typing import Any, Tuple
 logger = logging.getLogger(__name__)
 
 
-class QwenModelLoader:
-    """Loads a local Qwen model and tokenizer from disk.
+class ModelLoader:
+    """Loads a local LLM model and tokenizer from disk.
 
     This loader expects the model to be available in a directory that is compatible
     with `transformers.AutoTokenizer.from_pretrained` and
@@ -64,13 +64,13 @@ class QwenModelLoader:
                 resolved_device = "cpu"
             print(f"[LLM] Resolved device: {resolved_device}")
 
-        torch_dtype = None
+        dtype = None
         try:
             import torch
             if resolved_device == "cuda":
-                torch_dtype = getattr(torch, self._cuda_dtype, torch.float16)
+                dtype = getattr(torch, self._cuda_dtype, torch.float16)
             else:
-                torch_dtype = getattr(torch, self._cpu_dtype, torch.float32)
+                dtype = getattr(torch, self._cpu_dtype, torch.float32)
         except ImportError:
             torch = None  # type: ignore
 
@@ -92,15 +92,15 @@ class QwenModelLoader:
                     "load_in_8bit": use_8bit,
                 })
                 if use_4bit and torch is not None:
-                    model_kwargs["bnb_4bit_compute_dtype"] = torch_dtype or torch.float16
+                    model_kwargs["bnb_4bit_compute_dtype"] = dtype or torch.float16
             except ImportError:
                 logger.warning("bitsandbytes not installed; loading without quantization.")
                 use_4bit = use_8bit = False
 
-        if torch_dtype and not (use_4bit or use_8bit):
-            model_kwargs["torch_dtype"] = torch_dtype
+        if dtype and not (use_4bit or use_8bit):
+            model_kwargs["dtype"] = dtype
 
-        logger.info("Loading Qwen model from %s", self._model_dir)
+        logger.info("Loading model from %s", self._model_dir)
         tokenizer = AutoTokenizer.from_pretrained(self._model_dir, trust_remote_code=True)
         model = AutoModelForCausalLM.from_pretrained(self._model_dir, **model_kwargs)
 
@@ -109,7 +109,7 @@ class QwenModelLoader:
             model = model.to(resolved_device)
 
         logger.info(
-            "Qwen model loaded successfully on %s%s",
+            "Model loaded successfully on %s%s",
             resolved_device,
             " with quantization" if (use_4bit or use_8bit) else "",
         )

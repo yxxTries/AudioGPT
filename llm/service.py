@@ -4,7 +4,7 @@ import logging
 from typing import Any
 
 from .config import LLMConfig, DEFAULT_LLM_CONFIG, PROMPT_TEMPLATES, DEFAULT_PROMPT_KEY
-from .model_loader import QwenModelLoader
+from .model_loader import ModelLoader
 from .types import LLMRequest, LLMResponse
 
 
@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 class LLMService:
-    """High-level service to generate responses from a local Qwen model.
+    """High-level service to generate responses from a local TinyLlama model.
 
     This service is intentionally minimal: it accepts plain text input (e.g. ASR output)
     and returns a plain text response suitable for feeding back into a UI layer.
@@ -28,7 +28,7 @@ class LLMService:
         self._config = config or DEFAULT_LLM_CONFIG
 
         if model is None or tokenizer is None:
-            loader = QwenModelLoader(
+            loader = ModelLoader(
                 self._config.model_dir,
                 device=self._config.device,
                 load_in_8bit=self._config.load_in_8bit,
@@ -72,6 +72,7 @@ class LLMService:
         max_new_tokens = request.max_new_tokens or self._config.max_new_tokens
         temperature = request.temperature if request.temperature is not None else self._config.temperature
         top_p = request.top_p if request.top_p is not None else self._config.top_p
+        top_k = request.top_k if request.top_k is not None else self._config.top_k
         repetition_penalty = (
             request.repetition_penalty
             if request.repetition_penalty is not None
@@ -79,11 +80,12 @@ class LLMService:
         )
 
         logger.debug(
-            "Generating response (prompt_key=%s, max_new_tokens=%s, temperature=%s, top_p=%s, repetition_penalty=%s)",
+            "Generating response (prompt_key=%s, max_new_tokens=%s, temperature=%s, top_p=%s, top_k=%s, repetition_penalty=%s)",
             prompt_key,
             max_new_tokens,
             temperature,
             top_p,
+            top_k,
             repetition_penalty,
         )
 
@@ -101,19 +103,23 @@ class LLMService:
             max_new_tokens=max_new_tokens,
             temperature=temperature,
             top_p=top_p,
+            top_k=top_k,
             repetition_penalty=repetition_penalty,
             do_sample=temperature > 0,
             pad_token_id=getattr(self._tokenizer, "eos_token_id", None),
         )
 
-        # Decode the full sequence
-        full_text = self._tokenizer.decode(outputs[0], skip_special_tokens=True)
+        # Decode only the NEW tokens (exclude the input prompt tokens)
+        input_length = inputs["input_ids"].shape[1]
+        generated_tokens = outputs[0][input_length:]
+        generated_text = self._tokenizer.decode(generated_tokens, skip_special_tokens=True).strip()
 
-        # Strip the original prompt if the model echoes it back
-        if full_text.startswith(prompt):
-            generated_text = full_text[len(prompt):].strip()
-        else:
-            generated_text = full_text
+        # Clean up any remaining chat template artifacts
+        import re
+        # Remove any lingering template tags
+        generated_text = re.sub(r'<\|(?:system|user|assistant)\|>', '', generated_text)
+        generated_text = re.sub(r'</s>', '', generated_text)
+        generated_text = generated_text.strip()
 
         logger.debug("Generated response length=%d characters", len(generated_text))
 

@@ -251,6 +251,16 @@ if (textForm) {
   textForm.addEventListener("submit", handleTextSubmit);
 }
 
+// Allow Enter to send (Shift+Enter for new line)
+if (textInput) {
+  textInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      textForm.dispatchEvent(new Event("submit", { cancelable: true }));
+    }
+  });
+}
+
 if (recordBtn) {
   recordBtn.addEventListener("click", (e) => {
     e.preventDefault();

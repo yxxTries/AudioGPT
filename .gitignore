@@ -7,9 +7,13 @@ models/
 audiosample/
 audio/
 
-# Python caches
+# Python caches (project-wide)
 __pycache__/
 **/__pycache__/
+api/**/__pycache__/
+asr/**/__pycache__/
+llm/**/__pycache__/
+tests/**/__pycache__/
 
 # Python build artifacts
 *.py[cod]
